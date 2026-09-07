@@ -1,9 +1,10 @@
 "use client";
 
-import { EVENT, MAX_SHOTS } from "@/lib/constants";
+import { EVENT } from "@/lib/constants";
 import { setGuestName, useGuestId, useGuestName } from "@/lib/guest";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import Image from "next/image";
 
 export function LandingScreen() {
   const router = useRouter();
@@ -26,35 +27,55 @@ export function LandingScreen() {
       <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col justify-between">
         <header className="text-center">
           <p className="font-mono text-[11px] uppercase tracking-[0.35em] text-amber-800/80">
-            Fuji-ish disposable
+            Disposable Camera
           </p>
-          <h1 className="mt-4 font-serif text-5xl leading-none text-[#3b2416]">
-            {EVENT.title}
+          <h1 className="mt-3 font-serif text-4xl leading-tight text-[#3b2416]">
+            The Wedding of
+            <span className="block font-semibold italic text-[#8d6a45]">
+              Fifi &amp; Rido
+            </span>
           </h1>
-          <p className="mt-2 font-serif italic text-[#7a5a3a]">{EVENT.subtitle}</p>
         </header>
 
-        <div className="polaroid mx-auto w-[min(100%,20rem)] rotate-[-2deg]">
-          <div className="aspect-[4/5] overflow-hidden bg-[#cbb79a]">
-            <div className="flex h-full items-end bg-[linear-gradient(180deg,#d8c3a0_0%,#8d6a45_55%,#3e2a1b_100%)] p-4">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[#f4e6c8]">
-                21 exposures
+        {/* Polaroid frame dengan foto cover */}
+        <div className="polaroid mx-auto my-6 w-[min(100%,19rem)] rotate-[-2deg]">
+          <div className="relative aspect-[4/5] overflow-hidden bg-[#cbb79a]">
+            {/* Foto kalian */}
+            <Image
+              src="/cover.jpg"
+              alt="Fifi & Rido"
+              fill
+              priority
+              className="object-cover"
+            />
+
+            {/* Gradient halus di bawah biar teks ISO tetap kontras dan terbaca */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+            <div className="absolute bottom-0 left-0 right-0 p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#f4e6c8] drop-shadow-sm">
+                ISO 400 • 21 FRAMES
               </p>
             </div>
           </div>
-          <p className="mt-3 text-center font-serif text-sm text-[#5c4632]">
+          <p className="mt-3 text-center font-serif text-xs italic text-[#5c4632]">
             {EVENT.tagline}
           </p>
         </div>
 
-        <form onSubmit={onSubmit} className="space-y-4 pb-4">
-          <p className="text-center text-sm leading-relaxed text-[#5e4633]">
-            Tamu undangan berhak mengambil{" "}
-            <span className="font-semibold text-[#3b2416]">{MAX_SHOTS} foto</span>{" "}
-            momen akad. Isi nama, lalu mulai menggulung film.
-          </p>
-          <label className="block">
-            <span className="mb-2 block font-mono text-[11px] uppercase tracking-[0.22em] text-[#7a5a3a]">
+        {/* Headline & Sub-headline */}
+        <form onSubmit={onSubmit} className="mt-8 space-y-5 pb-4">
+          <div className="text-center space-y-2">
+            <h2 className="font-serif text-lg font-bold leading-relaxed text-[#3b2416]">
+              Abadikan setiap momen hangat di pernikahan kami melalui sudut pandangmu.
+            </h2>
+            <p className="font-sans text-xs font-normal leading-relaxed text-[#5c4632]">
+              Masukkan nama kamu untuk mulai membuka rol film.
+            </p>
+          </div>
+
+          <label className="block pt-1">
+            <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.22em] text-[#7a5a3a]">
               Nama tamu
             </span>
             <input
@@ -63,13 +84,14 @@ export function LandingScreen() {
               placeholder="Nama kamu"
               autoComplete="name"
               required
-              className="w-full rounded-none border-0 border-b-2 border-[#3b2416]/30 bg-transparent px-1 py-3 font-serif text-xl text-[#3b2416] outline-none placeholder:text-[#3b2416]/30 focus:border-[#c45c26]"
+              className="w-full rounded-none border-0 border-b-2 border-[#3b2416]/40 bg-transparent px-1 py-2.5 font-serif text-xl font-medium text-[#3b2416] outline-none placeholder:text-[#3b2416]/30 focus:border-[#c45c26]"
             />
           </label>
+
           <button
             type="submit"
             disabled={!guestId || !name.trim()}
-            className="w-full bg-[#2b2118] py-4 font-mono text-xs uppercase tracking-[0.32em] text-[#f6efe2] disabled:opacity-40"
+            className="w-full bg-[#2b2118] py-4 font-mono text-xs font-bold uppercase tracking-[0.32em] text-[#f6efe2] transition hover:bg-[#3b2e22] active:scale-[0.99] disabled:opacity-40 shadow-sm"
           >
             Mulai
           </button>
