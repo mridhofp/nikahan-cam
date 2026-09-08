@@ -1,86 +1,65 @@
 @import "tailwindcss";
 
 :root {
-  --background: #efe4cf;
-  --foreground: #3b2416;
+  --background: #0a0a0a;
+  --foreground: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-serif: var(--font-cormorant);
-  --font-lcd: var(--font-share-tech);
+  --font-sans: var(--font-inter), var(--font-geist-sans), sans-serif;
+  --font-serif: var(--font-inria), var(--font-cormorant), Georgia, serif;
+  --font-lcd: var(--font-share-tech), "Courier New", monospace;
   --font-mono: var(--font-share-tech), ui-monospace, monospace;
 }
 
 html,
 body {
   min-height: 100%;
-  background: var(--background);
-  color: var(--foreground);
+  background: #000000;
+  color: #ffffff;
 }
 
-body {
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+/* Custom Font Utilities */
+.font-inter {
+  font-family: var(--font-inter), var(--font-geist-sans), sans-serif;
 }
 
-.font-serif {
-  font-family: var(--font-cormorant), Georgia, serif;
+.font-inria {
+  font-family: var(--font-inria), var(--font-cormorant), Georgia, serif;
+}
+
+.font-bebas {
+  font-family: var(--font-bebas), sans-serif;
+}
+
+.font-cursive {
+  font-family: "Playwrite US Trad", cursive;
 }
 
 .font-lcd {
   font-family: var(--font-share-tech), "Courier New", monospace;
 }
 
-.vintage-wash {
-  background:
-    radial-gradient(circle at 20% 10%, rgba(255, 220, 160, 0.45), transparent 36%),
-    radial-gradient(circle at 80% 90%, rgba(160, 90, 40, 0.18), transparent 42%),
-    linear-gradient(180deg, #f4ead6 0%, #e4d2b3 100%);
+/* Film Grain bernuansa gelap */
+.film-grain-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.22'/%3E%3C/svg%3E");
+  mix-blend-mode: screen;
 }
 
-.film-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
+/* Efek Background Blur Figma */
+.figma-blur-card {
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.polaroid {
-  background: #f6f1e4;
-  padding: 12px 12px 18px;
-  box-shadow:
-    0 18px 40px rgba(20, 10, 0, 0.28),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
-}
-
-.shutter-button {
-  width: 76px;
-  height: 76px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 32% 28%, #fff6ea, #c9b7a2 46%, #4e3426);
-  box-shadow:
-    0 0 0 7px #1c1612,
-    0 0 0 11px #d7c4a6,
-    0 12px 22px rgba(0, 0, 0, 0.45);
-}
-
-.shutter-button:active {
-  transform: scale(0.94);
-}
-
-.album-mine {
-  background: #fffaf0;
-  padding: 8px;
-  box-shadow:
-    0 0 0 2px #d4af37,
-    0 14px 28px rgba(120, 90, 20, 0.22);
-}
-
-/* Animasi Halus Masuk */
+/* Animasi Masuk Halus (Fade-Up) */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(22px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -93,26 +72,42 @@ body {
 }
 
 .delay-100 {
-  animation-delay: 250ms;
+  animation-delay: 200ms;
 }
 
 .delay-200 {
-  animation-delay: 550ms;
+  animation-delay: 450ms;
 }
 
-/* Efek Muncul Film Polaroid (Opacity 0% ke 100% dalam 2.5 detik) */
-@keyframes filmDevelop {
+/* Animasi Goresan Tulisan Sambung Lambat */
+@keyframes writeLine {
   0% {
+    clip-path: inset(0 100% 0 0);
     opacity: 0;
-    filter: blur(4px) contrast(80%);
+    filter: blur(2px);
+  }
+  15% {
+    opacity: 1;
   }
   100% {
+    clip-path: inset(0 0% 0 0);
     opacity: 1;
-    filter: blur(0px) contrast(100%);
+    filter: blur(0px);
   }
 }
 
-.animate-film-develop {
-  animation: filmDevelop 2.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-  animation-delay: 400ms; /* Jeda sedikit setelah kartu polaroid muncul */
+.handwriting-line {
+  display: block;
+  opacity: 0;
+  clip-path: inset(0 100% 0 0);
+}
+
+.handwriting-line-1 {
+  animation: writeLine 3.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation-delay: 1.4s;
+}
+
+.handwriting-line-2 {
+  animation: writeLine 3.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+  animation-delay: 4.8s;
 }

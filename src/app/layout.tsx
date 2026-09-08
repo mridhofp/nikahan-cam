@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Geist, Share_Tech_Mono } from "next/font/google";
+import {
+  Cormorant_Garamond,
+  Geist,
+  Share_Tech_Mono,
+  Inter,
+  Inria_Serif,
+  Bebas_Neue,
+} from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,25 +26,62 @@ const lcd = Share_Tech_Mono({
   weight: "400",
 });
 
+// 3 Font Baru untuk Tema Monokrom
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+});
+
+const inriaSerif = Inria_Serif({
+  variable: "--font-inria",
+  subsets: ["latin"],
+  weight: ["300", "400", "700"],
+});
+
+const bebasNeue = Bebas_Neue({
+  variable: "--font-bebas",
+  subsets: ["latin"],
+  weight: "400",
+});
+
 export const metadata: Metadata = {
-  title: "Akad Nikah · Disposable Camera",
-  description: "Ambil 21 momen akad dengan kamera disposable fuji retro.",
+  title: "The Wedding of Fifi & Rido · Disposable Camera",
+  description: "Abadikan setiap momen hangat di pernikahan kami melalui sudut pandangmu.",
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#16110d",
+  themeColor: "#000000",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html
       lang="id"
-      className={`${geistSans.variable} ${serif.variable} ${lcd.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${serif.variable} ${lcd.variable} ${inter.variable} ${inriaSerif.variable} ${bebasNeue.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <head>
+        {/* Font Cursive Playwrite US Trad */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Playwrite+US+Trad:wght@100..400&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-black text-white selection:bg-white selection:text-black">
+        {children}
+      </body>
     </html>
   );
 }

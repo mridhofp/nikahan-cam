@@ -1,6 +1,5 @@
 "use client";
 
-import { EVENT } from "@/lib/constants";
 import { setGuestName, useGuestId, useGuestName } from "@/lib/guest";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
@@ -11,7 +10,6 @@ export function LandingScreen() {
   const guestId = useGuestId();
   const storedName = useGuestName();
   const [draft, setDraft] = useState<string | null>(null);
-  const [isPhotoLoaded, setIsPhotoLoaded] = useState(false);
   const name = draft ?? storedName;
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -23,84 +21,103 @@ export function LandingScreen() {
   }
 
   return (
-    <main className="relative flex min-h-dvh flex-col overflow-hidden px-5 py-8">
-      <div className="pointer-events-none absolute inset-0 film-grain vintage-wash" />
-      <div className="relative mx-auto flex w-full max-w-md flex-1 flex-col justify-between">
-        {/* Header */}
-        <header className="text-center animate-fade-up">
-          <p className="font-mono text-[11px] uppercase tracking-[0.35em] text-amber-800/80">
-            Disposable Camera
+    <main className="relative flex min-h-dvh flex-col justify-between overflow-hidden bg-black px-6 py-9">
+      {/* Background Foto + Grayscale + Lapisan Hitam + Gradient Bawah */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <Image
+          src="/cover.jpg"
+          alt="Latar Fifi & Rido"
+          fill
+          priority
+          className="object-cover grayscale contrast-125 brightness-90"
+        />
+        <div className="absolute inset-0 bg-black/80" />
+        <div className="absolute inset-x-0 bottom-0 h-[24%] bg-gradient-to-t from-black/75 via-black/40 to-transparent" />
+        <div className="absolute inset-0 film-grain-dark opacity-30" />
+      </div>
+
+      {/* Konten Utama */}
+      <div className="relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col justify-between">
+        {/* Header Bagian Atas */}
+        <header className="animate-fade-up text-center pt-2">
+          <p className="font-inter text-xs tracking-[0.1em] text-neutral-300/90">
+            a disposable camera
           </p>
-          <h1 className="mt-3 font-serif text-4xl leading-tight text-[#3b2416]">
-            The Wedding of
-            <span className="block font-semibold italic text-[#8d6a45]">
-              Fifi &amp; Rido
-            </span>
+          <p className="font-inter mt-4 text-[13px] font-normal uppercase tracking-[0.45em] text-neutral-200 pl-[0.45em]">
+            THE WEDDING OF
+          </p>
+          <h1 className="font-inria mt-1.5 text-[50px] font-normal leading-none tracking-normal text-white drop-shadow-md">
+            Fifi &amp; Rido
           </h1>
         </header>
 
-        {/* Polaroid frame */}
-        <div className="polaroid mx-auto my-6 w-[min(100%,19rem)] rotate-[-2deg] transition-all duration-700 ease-out hover:rotate-0 hover:scale-[1.02] hover:shadow-2xl active:scale-[0.98] animate-fade-up delay-100">
-          <div className="relative aspect-[4/5] overflow-hidden bg-[#2b2118]">
-            {/* Foto muncul pelan dan stabil (durasi 2,5 detik murni CSS transition) */}
-            <div
-              className={`relative h-full w-full transition-all duration-[2500ms] ease-out ${
-                isPhotoLoaded
-                  ? "opacity-100 filter-none scale-100"
-                  : "opacity-0 blur-sm scale-[1.03]"
-              }`}
-            >
-              <Image
-                src="/cover.jpg"
-                alt="Fifi & Rido"
-                fill
-                priority
-                onLoad={() => setIsPhotoLoaded(true)}
-                className="object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+        {/* Kotak Transparan: Figma Background Blur + Kemiringan -1.56 Deg */}
+        <div className="animate-fade-up delay-100 my-4 flex flex-col items-center">
+          <div className="relative w-full -rotate-[1.56deg] rounded-2xl border border-white/30 figma-blur-card p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
+            {/* Garis Border Dalam */}
+            <div className="relative flex aspect-[4/4.6] w-full flex-col justify-between rounded-xl border border-white/20 p-4">
+              {/* Ikon Tengah */}
+              <div className="flex flex-1 items-center justify-center">
+                <div className="relative h-28 w-28">
+                  <Image
+                    src="/icon-center.png"
+                    alt="Logo Aperture"
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+              </div>
+
+              {/* Teks ISO Bebas Neue */}
+              <div className="flex items-center">
+                <p className="font-bebas text-xs tracking-widest text-neutral-300">
+                  ISO 400 . FIFI &amp; RIDO
+                </p>
+              </div>
             </div>
 
-            <div className="absolute bottom-0 left-0 right-0 p-4 z-10 pointer-events-none">
-              <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#f4e6c8] drop-shadow-sm">
-                ISO 400 • 21 FRAMES
-              </p>
+            {/* Tulisan Sambung Lambat */}
+            <div className="px-2 pt-4 pb-1 text-center font-cursive text-sm leading-relaxed text-neutral-200">
+              <span className="handwriting-line handwriting-line-1">
+                Satu rol film, Dua puluh satu momen,
+              </span>
+              <span className="handwriting-line handwriting-line-2 mt-0.5">
+                jangan sampai terlewat
+              </span>
             </div>
           </div>
-          <p className="mt-3 text-center font-serif text-xs italic text-[#5c4632]">
-            {EVENT.tagline}
-          </p>
         </div>
 
-        {/* Form area */}
-        <form onSubmit={onSubmit} className="mt-8 space-y-5 pb-4 animate-fade-up delay-200">
+        {/* Area Headline Bawah & Form Input Tamu */}
+        <form
+          onSubmit={onSubmit}
+          className="animate-fade-up delay-200 flex flex-col items-center space-y-4 pb-2"
+        >
           <div className="text-center space-y-2">
-            <h2 className="font-serif text-lg font-bold leading-relaxed text-[#3b2416]">
+            <h2 className="font-inria text-[1.32rem] leading-snug font-normal text-white px-1 drop-shadow-md">
               Abadikan setiap momen hangat di pernikahan kami melalui sudut pandangmu.
             </h2>
-            <p className="font-sans text-xs font-normal leading-relaxed text-[#5c4632]">
-              Masukkan nama kamu untuk mulai membuka rol film.
+            <p className="font-inter text-xs font-light text-neutral-300 drop-shadow-sm">
+              Masukkan nama kamu untuk mulai rol film
             </p>
           </div>
 
-          <label className="block pt-1">
-            <span className="mb-1.5 block font-mono text-[11px] uppercase tracking-[0.22em] text-[#7a5a3a]">
-              Nama tamu
-            </span>
+          <div className="w-full pt-1">
             <input
               value={name}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="Nama kamu"
+              placeholder="Nama Kamu"
               autoComplete="name"
               required
-              className="w-full rounded-none border-0 border-b-2 border-[#3b2416]/40 bg-transparent px-1 py-2.5 font-serif text-xl font-medium text-[#3b2416] outline-none transition-colors duration-300 placeholder:text-[#3b2416]/30 focus:border-[#c45c26]"
+              className="w-full border-b border-white/40 bg-transparent px-1 py-2 text-center font-inter text-base font-normal text-white placeholder:text-neutral-500 focus:border-white focus:outline-none transition-colors"
             />
-          </label>
+          </div>
 
+          {/* Tombol Mulai Capsule */}
           <button
             type="submit"
             disabled={!guestId || !name.trim()}
-            className="w-full bg-[#2b2118] py-4 font-mono text-xs font-bold uppercase tracking-[0.32em] text-[#f6efe2] shadow-md transition-all duration-200 hover:bg-[#3b2e22] hover:shadow-lg active:scale-[0.97] active:shadow-inner disabled:opacity-40"
+            className="mt-2 w-48 rounded-full bg-white py-3.5 font-inter text-sm font-medium text-black shadow-lg transition-all hover:bg-neutral-200 active:scale-95 disabled:opacity-30"
           >
             Mulai
           </button>
