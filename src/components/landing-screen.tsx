@@ -51,7 +51,7 @@ export function LandingScreen() {
           </h1>
         </header>
 
-        {/* Kotak Transparan: Figma Background Blur + Kemiringan -1.56 Deg */}
+        {/* Kotak Transparan: Blur Diturunkan 70% + Kemiringan -1.56 Deg */}
         <div className="animate-fade-up delay-100 my-4 flex flex-col items-center">
           <div className="relative w-full -rotate-[1.56deg] rounded-2xl border border-white/30 figma-blur-card p-3.5 shadow-[0_20px_50px_rgba(0,0,0,0.7)]">
             {/* Garis Border Dalam */}
