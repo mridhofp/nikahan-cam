@@ -32,10 +32,8 @@ export function DisposableCamera() {
   const [isFlipping, setIsFlipping] = useState(false);
   const [isRolling, setIsRolling] = useState(false);
 
-  // State Modal Preview Foto
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  // Remaining shots & mechanical reel drum strip
   const remaining = Math.max(0, MAX_SHOTS - shots.length);
 
   const filmReel = useMemo(() => {
@@ -145,8 +143,9 @@ export function DisposableCamera() {
       ctx.scale(-1, 1);
     }
 
+    // Filter Base: Diturunkan 50% (hue-rotate dari -12deg -> -4deg)
     if (filterMode === "disposable") {
-      ctx.filter = "contrast(1.18) saturate(1.15) brightness(1.02) hue-rotate(-12deg)";
+      ctx.filter = "contrast(1.12) saturate(1.08) brightness(1.02) hue-rotate(-4deg)";
     } else if (filterMode === "bw") {
       ctx.filter = "grayscale(100%) contrast(1.25) brightness(0.95)";
     } else {
@@ -157,29 +156,34 @@ export function DisposableCamera() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.filter = "none";
 
+    // Fuji Tone Diturunkan 50%, Grain Kasar Tetap 100%
     if (filterMode === "disposable") {
+      // 1. Shadow tint sejuk diturunkan 50% (opacity 0.12)
       ctx.globalCompositeOperation = "screen";
-      ctx.fillStyle = "rgba(18, 55, 32, 0.28)";
+      ctx.fillStyle = "rgba(18, 55, 36, 0.12)";
       ctx.fillRect(0, 0, width, height);
 
+      // 2. Midtone green wash diturunkan 50% (opacity 0.08)
       ctx.globalCompositeOperation = "color-burn";
-      ctx.fillStyle = "rgba(55, 95, 65, 0.22)";
+      ctx.fillStyle = "rgba(45, 80, 60, 0.08)";
       ctx.fillRect(0, 0, width, height);
 
+      // 3. Vignette halus tepi lensa
       ctx.globalCompositeOperation = "multiply";
       const vig = ctx.createRadialGradient(
         width / 2,
         height / 2,
-        width * 0.35,
+        width * 0.4,
         width / 2,
         height / 2,
-        width * 0.75,
+        width * 0.78,
       );
       vig.addColorStop(0, "rgba(255, 255, 255, 1)");
-      vig.addColorStop(1, "rgba(145, 175, 150, 0.8)");
+      vig.addColorStop(1, "rgba(185, 200, 190, 0.85)");
       ctx.fillStyle = vig;
       ctx.fillRect(0, 0, width, height);
 
+      // 4. Procedural Heavy Grain ISO 400 TETAP 100% MANTAP
       ctx.globalCompositeOperation = "overlay";
       const grainCanvas = document.createElement("canvas");
       const grainCtx = grainCanvas.getContext("2d");
@@ -215,6 +219,7 @@ export function DisposableCamera() {
       ctx.fillRect(0, 0, width, height);
     }
 
+    // Realtime Date Stamp Oranye Neon
     const stampText = clock;
     const fontSize = Math.max(22, Math.round(width * 0.032));
     ctx.font = `bold ${fontSize}px "Share Tech Mono", monospace`;
@@ -287,9 +292,10 @@ export function DisposableCamera() {
     }
   }
 
+  // Live CSS Filter (Diturunkan 50%)
   const getVideoFilter = () => {
     if (filterMode === "disposable") {
-      return "contrast(1.18) saturate(1.15) brightness(1.02) hue-rotate(-12deg)";
+      return "contrast(1.12) saturate(1.08) brightness(1.02) hue-rotate(-4deg)";
     }
     if (filterMode === "bw") {
       return "grayscale(100%) contrast(1.25) brightness(0.95)";
@@ -301,7 +307,6 @@ export function DisposableCamera() {
 
   return (
     <main className="relative flex min-h-dvh flex-col justify-between overflow-hidden bg-black px-5 py-6 text-white select-none">
-      {/* Background Dimming */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <Image
           src="/cover.jpg"
@@ -329,7 +334,7 @@ export function DisposableCamera() {
             </h2>
           </div>
 
-          {/* Badge Roll Counter: Persis Screenshot Figma */}
+          {/* Badge Roll Counter */}
           <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-neutral-900/60 px-3 py-1.5 backdrop-blur-md shadow-[0_8px_20px_rgba(0,0,0,0.5)]">
             <div className="flex flex-col items-center justify-center">
               <div className={`relative h-6 w-6 ${isRolling ? "animate-roll-spin" : ""}`}>
@@ -345,7 +350,6 @@ export function DisposableCamera() {
               </span>
             </div>
 
-            {/* Continuous Vertical Mechanical Drum */}
             <div className="relative h-[66px] w-6 overflow-hidden select-none font-serif">
               <div
                 className="flex flex-col items-center transition-transform duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]"
@@ -391,10 +395,11 @@ export function DisposableCamera() {
                 }}
               />
 
+              {/* Viewfinder: Hijau diturunkan 50%, grain tetap kuat */}
               {filterMode === "disposable" ? (
                 <>
-                  <div className="pointer-events-none absolute inset-0 bg-[#0f3822]/24 mix-blend-screen" />
-                  <div className="pointer-events-none absolute inset-0 bg-[#2d583b]/22 mix-blend-color-burn" />
+                  <div className="pointer-events-none absolute inset-0 bg-[#0f3822]/10 mix-blend-screen" />
+                  <div className="pointer-events-none absolute inset-0 bg-[#2d583b]/10 mix-blend-color-burn" />
                   <div className="pointer-events-none absolute inset-0 fuji-heavy-grain opacity-85" />
                 </>
               ) : null}
@@ -501,7 +506,6 @@ export function DisposableCamera() {
             </button>
           </div>
 
-          {/* Dotted Thumbnail Preview Box */}
           <div className="flex items-center justify-end w-[84px]">
             <button
               type="button"
@@ -530,10 +534,9 @@ export function DisposableCamera() {
         </button>
       </div>
 
-      {/* Pop Up Galeri Mini Grid 2 Kolom dengan Aesthetic Corner Radius */}
+      {/* Pop Up Galeri Mini */}
       {isPreviewOpen ? (
         <div className="fixed inset-0 z-50 flex flex-col justify-between bg-black/85 p-5 backdrop-blur-2xl animate-in fade-in duration-300">
-          {/* Header Pop Up */}
           <div className="flex items-center justify-between pt-1">
             <div>
               <p className="font-inter text-xs font-medium text-white">
@@ -552,7 +555,6 @@ export function DisposableCamera() {
             </button>
           </div>
 
-          {/* Grid 2 Kolom dengan Rounded Corner Aesthetic & Drop Shadow */}
           <div className="my-auto max-h-[72vh] overflow-y-auto pr-1 py-3">
             <div className="grid grid-cols-2 gap-3.5">
               {shots.map((shot, idx) => (
@@ -570,7 +572,6 @@ export function DisposableCamera() {
                     fill
                     className="object-cover"
                   />
-                  {/* Subtle Corner Badge Number */}
                   <div className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-0.5 backdrop-blur-md">
                     <span className="font-lcd text-[10px] text-[#ff7a18] drop-shadow-[0_0_4px_rgba(255,90,0,0.8)]">
                       #{idx + 1}
@@ -581,7 +582,6 @@ export function DisposableCamera() {
             </div>
           </div>
 
-          {/* Footer Pop Up: Tutup Button */}
           <button
             type="button"
             onClick={() => setIsPreviewOpen(false)}
