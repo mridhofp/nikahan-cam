@@ -76,6 +76,24 @@ export function DisposableCamera() {
     }
   }, [stopStream]);
 
+  // Kontrol hardware torch LED blitz HP
+  const setHardwareTorch = useCallback(async (enable: boolean) => {
+    try {
+      const track = streamRef.current?.getVideoTracks()[0];
+      if (!track) return;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const capabilities = (track as any).getCapabilities?.();
+      if (capabilities && capabilities.torch) {
+        await track.applyConstraints({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          advanced: [{ torch: enable } as any],
+        });
+      }
+    } catch {
+      // Browser HP tidak mengizinkan akses langsung lampu senter
+    }
+  }, []);
+
   useEffect(() => {
     if (guestId && !guestName) {
       router.replace("/");
@@ -143,7 +161,6 @@ export function DisposableCamera() {
       ctx.scale(-1, 1);
     }
 
-    // Filter Base: Diturunkan 50% (hue-rotate dari -12deg -> -4deg)
     if (filterMode === "disposable") {
       ctx.filter = "contrast(1.12) saturate(1.08) brightness(1.02) hue-rotate(-4deg)";
     } else if (filterMode === "bw") {
@@ -156,19 +173,15 @@ export function DisposableCamera() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.filter = "none";
 
-    // Fuji Tone Diturunkan 50%, Grain Kasar Tetap 100%
     if (filterMode === "disposable") {
-      // 1. Shadow tint sejuk diturunkan 50% (opacity 0.12)
       ctx.globalCompositeOperation = "screen";
-      ctx.fillStyle = "rgba(18, 55, 36, 0.12)";
+      ctx.fillStyle = "rgba(18, 55, 32, 0.12)";
       ctx.fillRect(0, 0, width, height);
 
-      // 2. Midtone green wash diturunkan 50% (opacity 0.08)
       ctx.globalCompositeOperation = "color-burn";
       ctx.fillStyle = "rgba(45, 80, 60, 0.08)";
       ctx.fillRect(0, 0, width, height);
 
-      // 3. Vignette halus tepi lensa
       ctx.globalCompositeOperation = "multiply";
       const vig = ctx.createRadialGradient(
         width / 2,
@@ -183,7 +196,6 @@ export function DisposableCamera() {
       ctx.fillStyle = vig;
       ctx.fillRect(0, 0, width, height);
 
-      // 4. Procedural Heavy Grain ISO 400 TETAP 100% MANTAP
       ctx.globalCompositeOperation = "overlay";
       const grainCanvas = document.createElement("canvas");
       const grainCtx = grainCanvas.getContext("2d");
@@ -213,13 +225,12 @@ export function DisposableCamera() {
         height / 2,
         width * 0.8,
       );
-      grad.addColorStop(0, "rgba(255, 255, 255, 0.18)");
-      grad.addColorStop(1, "rgba(0, 0, 0, 0.55)");
+      grad.addColorStop(0, "rgba(255, 255, 255, 0.22)");
+      grad.addColorStop(1, "rgba(0, 0, 0, 0.5)");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, width, height);
     }
 
-    // Realtime Date Stamp Oranye Neon
     const stampText = clock;
     const fontSize = Math.max(22, Math.round(width * 0.032));
     ctx.font = `bold ${fontSize}px "Share Tech Mono", monospace`;
@@ -249,14 +260,18 @@ export function DisposableCamera() {
     setShutterBlink(true);
     setIsRolling(true);
 
+    // Trigger Blitz Lampu LED + Screen Flash
     if (flashEnabled) {
       setFlashBurst(true);
-      setTimeout(() => setFlashBurst(false), 160);
+      if (facingMode === "environment") {
+        await setHardwareTorch(true);
+      }
+      // Jeda sepersekian detik agar sensor kamera menyerap cahaya blitz
+      await new Promise((r) => setTimeout(r, 90));
     }
 
     window.navigator.vibrate?.(45);
     setTimeout(() => setShutterBlink(false), 90);
-    setTimeout(() => setIsRolling(false), 650);
 
     try {
       const blob = await captureFrameWithFilter(video);
@@ -288,11 +303,18 @@ export function DisposableCamera() {
     } catch {
       setError("Gagal mengambil foto. Coba lagi.");
     } finally {
-      setBusy(false);
+      // Matikan kembali lampu blitz LED setelah selesai jepret
+      if (flashEnabled && facingMode === "environment") {
+        await setHardwareTorch(false);
+      }
+      setTimeout(() => {
+        setFlashBurst(false);
+        setIsRolling(false);
+        setBusy(false);
+      }, 140);
     }
   }
 
-  // Live CSS Filter (Diturunkan 50%)
   const getVideoFilter = () => {
     if (filterMode === "disposable") {
       return "contrast(1.12) saturate(1.08) brightness(1.02) hue-rotate(-4deg)";
@@ -318,8 +340,9 @@ export function DisposableCamera() {
         <div className="absolute inset-0 film-grain-dark opacity-40" />
       </div>
 
+      {/* Screen Whiteout Flash (Menerangi objek saat kamera depan/belakang) */}
       {flashBurst ? (
-        <div className="fixed inset-0 z-50 pointer-events-none bg-white opacity-95 transition-opacity duration-150" />
+        <div className="fixed inset-0 z-50 pointer-events-none bg-white opacity-100 transition-opacity duration-150" />
       ) : null}
 
       <div className="relative z-10 mx-auto flex w-full max-w-sm flex-1 flex-col justify-between">
@@ -395,7 +418,6 @@ export function DisposableCamera() {
                 }}
               />
 
-              {/* Viewfinder: Hijau diturunkan 50%, grain tetap kuat */}
               {filterMode === "disposable" ? (
                 <>
                   <div className="pointer-events-none absolute inset-0 bg-[#0f3822]/10 mix-blend-screen" />
