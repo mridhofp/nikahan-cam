@@ -76,7 +76,6 @@ export function DisposableCamera() {
     }
   }, [stopStream]);
 
-  // Kontrol hardware torch LED blitz HP
   const setHardwareTorch = useCallback(async (enable: boolean) => {
     try {
       const track = streamRef.current?.getVideoTracks()[0];
@@ -90,7 +89,7 @@ export function DisposableCamera() {
         });
       }
     } catch {
-      // Browser HP tidak mengizinkan akses langsung lampu senter
+      // Browser tidak mengizinkan lampu senter
     }
   }, []);
 
@@ -148,9 +147,24 @@ export function DisposableCamera() {
   };
 
   const captureFrameWithFilter = async (video: HTMLVideoElement): Promise<Blob> => {
+    const origWidth = video.videoWidth || 1280;
+    const origHeight = video.videoHeight || 960;
+
+    const MAX_DIMENSION = 1280;
+    let width = origWidth;
+    let height = origHeight;
+
+    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+      if (width > height) {
+        height = Math.round((height * MAX_DIMENSION) / width);
+        width = MAX_DIMENSION;
+      } else {
+        width = Math.round((width * MAX_DIMENSION) / height);
+        height = MAX_DIMENSION;
+      }
+    }
+
     const canvas = document.createElement("canvas");
-    const width = video.videoWidth || 1280;
-    const height = video.videoHeight || 960;
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
@@ -247,7 +261,7 @@ export function DisposableCamera() {
           else reject(new Error("Blob error"));
         },
         "image/jpeg",
-        0.92,
+        0.74,
       );
     });
   };
@@ -260,13 +274,11 @@ export function DisposableCamera() {
     setShutterBlink(true);
     setIsRolling(true);
 
-    // Trigger Blitz Lampu LED + Screen Flash
     if (flashEnabled) {
       setFlashBurst(true);
       if (facingMode === "environment") {
         await setHardwareTorch(true);
       }
-      // Jeda sepersekian detik agar sensor kamera menyerap cahaya blitz
       await new Promise((r) => setTimeout(r, 90));
     }
 
@@ -303,7 +315,6 @@ export function DisposableCamera() {
     } catch {
       setError("Gagal mengambil foto. Coba lagi.");
     } finally {
-      // Matikan kembali lampu blitz LED setelah selesai jepret
       if (flashEnabled && facingMode === "environment") {
         await setHardwareTorch(false);
       }
@@ -340,7 +351,6 @@ export function DisposableCamera() {
         <div className="absolute inset-0 film-grain-dark opacity-40" />
       </div>
 
-      {/* Screen Whiteout Flash (Menerangi objek saat kamera depan/belakang) */}
       {flashBurst ? (
         <div className="fixed inset-0 z-50 pointer-events-none bg-white opacity-100 transition-opacity duration-150" />
       ) : null}
@@ -400,7 +410,7 @@ export function DisposableCamera() {
           </div>
         </header>
 
-        {/* Viewfinder Polaroid Frame */}
+        {/* Viewfinder Polaroid Frame (Ukuran Lega Asli) */}
         <div className="my-auto flex flex-col items-center py-2">
           <div className="relative w-full -rotate-[1.4deg] rounded-2xl border border-neutral-200/90 bg-[#F7F5F0] p-2.5 pb-5 shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
             <div className="relative aspect-[4/4.8] w-full overflow-hidden rounded-lg bg-black">
@@ -489,7 +499,7 @@ export function DisposableCamera() {
           </div>
         </div>
 
-        {/* Shutter Control Bar */}
+        {/* Shutter Control Bar (Kembali Rapat & Nyaman Dijangkau) */}
         <div className="flex items-center justify-between px-3 pt-2 pb-3">
           <div className="flex items-center gap-2">
             <button
