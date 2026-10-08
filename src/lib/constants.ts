@@ -1,4 +1,4 @@
-export const MAX_SHOTS = 21;
+export const MAX_SHOTS = 11;
 
 export const STORAGE_BUCKET = "guest-photos";
 

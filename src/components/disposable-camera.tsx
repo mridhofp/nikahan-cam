@@ -76,6 +76,7 @@ export function DisposableCamera() {
     }
   }, [stopStream]);
 
+  // Kontrol hardware torch LED blitz HP
   const setHardwareTorch = useCallback(async (enable: boolean) => {
     try {
       const track = streamRef.current?.getVideoTracks()[0];
@@ -89,7 +90,7 @@ export function DisposableCamera() {
         });
       }
     } catch {
-      // Browser tidak mengizinkan lampu senter
+      // Browser HP tidak mengizinkan akses langsung lampu senter
     }
   }, []);
 
@@ -147,24 +148,9 @@ export function DisposableCamera() {
   };
 
   const captureFrameWithFilter = async (video: HTMLVideoElement): Promise<Blob> => {
-    const origWidth = video.videoWidth || 1280;
-    const origHeight = video.videoHeight || 960;
-
-    const MAX_DIMENSION = 1280;
-    let width = origWidth;
-    let height = origHeight;
-
-    if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-      if (width > height) {
-        height = Math.round((height * MAX_DIMENSION) / width);
-        width = MAX_DIMENSION;
-      } else {
-        width = Math.round((width * MAX_DIMENSION) / height);
-        height = MAX_DIMENSION;
-      }
-    }
-
     const canvas = document.createElement("canvas");
+    const width = video.videoWidth || 1280;
+    const height = video.videoHeight || 960;
     canvas.width = width;
     canvas.height = height;
     const ctx = canvas.getContext("2d");
@@ -175,18 +161,22 @@ export function DisposableCamera() {
       ctx.scale(-1, 1);
     }
 
+    // Set filter dasar sebelum menggambar foto ke canvas
     if (filterMode === "disposable") {
       ctx.filter = "contrast(1.12) saturate(1.08) brightness(1.02) hue-rotate(-4deg)";
     } else if (filterMode === "bw") {
-      ctx.filter = "grayscale(100%) contrast(1.25) brightness(0.95)";
+      ctx.filter = "grayscale(100%) contrast(1.2) brightness(0.98)";
     } else {
       ctx.filter = "none";
     }
 
     ctx.drawImage(video, 0, 0, width, height);
+    
+    // Reset transform dan filter agar tidak menumpuk ke layer grain
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.filter = "none";
 
+    // Fuji Tone & Grain Kasar Tetap 100%
     if (filterMode === "disposable") {
       ctx.globalCompositeOperation = "screen";
       ctx.fillStyle = "rgba(18, 55, 32, 0.12)";
@@ -228,6 +218,25 @@ export function DisposableCamera() {
       }
 
       ctx.globalCompositeOperation = "source-over";
+    } else if (filterMode === "bw") {
+      // Tambahkan Grain Kasar ke filter BW agar estetik analog
+      ctx.globalCompositeOperation = "overlay";
+      const grainCanvas = document.createElement("canvas");
+      const grainCtx = grainCanvas.getContext("2d");
+      if (grainCtx) {
+        grainCanvas.width = 250;
+        grainCanvas.height = 250;
+        const imgData = grainCtx.createImageData(250, 250);
+        const buffer = new Uint32Array(imgData.data.buffer);
+        for (let i = 0; i < buffer.length; i++) {
+          const noise = Math.floor(Math.random() * 255);
+          buffer[i] = (65 << 24) | (noise << 16) | (noise << 8) | noise;
+        }
+        grainCtx.putImageData(imgData, 0, 0);
+        ctx.fillStyle = ctx.createPattern(grainCanvas, "repeat") || "transparent";
+        ctx.fillRect(0, 0, width, height);
+      }
+      ctx.globalCompositeOperation = "source-over";
     }
 
     if (flashEnabled) {
@@ -261,7 +270,7 @@ export function DisposableCamera() {
           else reject(new Error("Blob error"));
         },
         "image/jpeg",
-        0.74,
+        0.92,
       );
     });
   };
@@ -274,11 +283,13 @@ export function DisposableCamera() {
     setShutterBlink(true);
     setIsRolling(true);
 
+    // Trigger Blitz Lampu LED + Screen Flash
     if (flashEnabled) {
       setFlashBurst(true);
       if (facingMode === "environment") {
         await setHardwareTorch(true);
       }
+      // Jeda sepersekian detik agar sensor kamera menyerap cahaya blitz
       await new Promise((r) => setTimeout(r, 90));
     }
 
@@ -315,6 +326,7 @@ export function DisposableCamera() {
     } catch {
       setError("Gagal mengambil foto. Coba lagi.");
     } finally {
+      // Matikan kembali lampu blitz LED setelah selesai jepret
       if (flashEnabled && facingMode === "environment") {
         await setHardwareTorch(false);
       }
@@ -331,7 +343,7 @@ export function DisposableCamera() {
       return "contrast(1.12) saturate(1.08) brightness(1.02) hue-rotate(-4deg)";
     }
     if (filterMode === "bw") {
-      return "grayscale(100%) contrast(1.25) brightness(0.95)";
+      return "grayscale(100%) contrast(1.2) brightness(0.98)";
     }
     return "none";
   };
@@ -351,6 +363,7 @@ export function DisposableCamera() {
         <div className="absolute inset-0 film-grain-dark opacity-40" />
       </div>
 
+      {/* Screen Whiteout Flash (Menerangi objek saat kamera depan/belakang) */}
       {flashBurst ? (
         <div className="fixed inset-0 z-50 pointer-events-none bg-white opacity-100 transition-opacity duration-150" />
       ) : null}
@@ -410,7 +423,7 @@ export function DisposableCamera() {
           </div>
         </header>
 
-        {/* Viewfinder Polaroid Frame (Ukuran Lega Asli) */}
+        {/* Viewfinder Polaroid Frame */}
         <div className="my-auto flex flex-col items-center py-2">
           <div className="relative w-full -rotate-[1.4deg] rounded-2xl border border-neutral-200/90 bg-[#F7F5F0] p-2.5 pb-5 shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
             <div className="relative aspect-[4/4.8] w-full overflow-hidden rounded-lg bg-black">
@@ -499,7 +512,7 @@ export function DisposableCamera() {
           </div>
         </div>
 
-        {/* Shutter Control Bar (Kembali Rapat & Nyaman Dijangkau) */}
+        {/* Shutter Control Bar */}
         <div className="flex items-center justify-between px-3 pt-2 pb-3">
           <div className="flex items-center gap-2">
             <button
@@ -507,7 +520,7 @@ export function DisposableCamera() {
               onClick={() => setFlashEnabled((v) => !v)}
               className={`rounded-full p-2.5 transition-all active:scale-90 ${
                 flashEnabled
-                  ? "text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
+              ? "text-amber-400 drop-shadow-[0_0_10px_rgba(251,191,36,0.7)]"
                   : "text-neutral-400 hover:text-white"
               }`}
             >
