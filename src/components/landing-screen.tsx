@@ -79,10 +79,10 @@ export function LandingScreen() {
             {/* Tulisan Sambung Lambat */}
             <div className="px-2 pt-4 pb-1 text-center font-cursive text-sm leading-relaxed text-neutral-200">
               <span className="handwriting-line handwriting-line-1">
-                Satu rol film, Dua puluh satu momen,
+              Satu rol film. Sebelas momen.
               </span>
               <span className="handwriting-line handwriting-line-2 mt-0.5">
-                jangan sampai terlewat
+              Buat hari ini nggak terlupakan.
               </span>
             </div>
           </div>
